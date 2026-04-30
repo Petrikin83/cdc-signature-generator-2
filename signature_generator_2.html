@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CDC Signature Generator</title>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card-bg: #ffffff;
+      --text-primary: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --border: #d2d2d7;
+      --accent: #f15a24;
+      --accent-hover: #d94d1b;
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+      --shadow-md: 0 8px 24px rgba(0,0,0,0.06);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      font-family: var(--font-stack);
+      color: var(--text-primary);
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 3rem;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .header-logo {
+      height: 48px; /* немного крупнее для лучшего баланса */
+      width: auto;
+    }
+    .header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #1d1d1f;
+      margin: 0;
+    }
+    .header-sub {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .field {
+      margin-bottom: 1.2rem;
+    }
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.7rem 0.8rem;
+      font-size: 0.95rem;
+      font-family: var(--font-stack);
+      background: #fafafa;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(241, 90, 36, 0.15);
+      background: #fff;
+    }
+    .field textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+    }
+
+    .optional {
+      font-weight: 400;
+      text-transform: none;
+      font-size: 0.75rem;
+      color: #999;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 2rem;
+      padding: 0.7rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: var(--font-stack);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+    .btn-secondary {
+      background: #f2f2f7;
+      color: #1d1d1f;
+    }
+    .btn-secondary:hover {
+      background: #e5e5ea;
+    }
+    .btn-wide {
+      width: 100%;
+    }
+
+    .status {
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      color: #34c759;
+      font-weight: 500;
+    }
+
+    .preview-box {
+      background: #fff;
+      border: 1px solid #e5e5ea;
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.5rem;
+    }
+    .preview-box h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .preview-content {
+      font-family: Arial, Helvetica, sans-serif;
+      margin-bottom: 1rem;
+    }
+    .preview-actions {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .apple-note {
+      background: #fff9e6;
+      border: 1px solid #ffc107;
+      border-radius: var(--radius-sm);
+      padding: 0.6rem 1rem;
+      font-size: 0.8rem;
+      color: #333;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .apple-note strong {
+      color: #b45309;
+    }
+
+    .form-actions {
+      margin-top: 1.2rem;
+    }
+
+    @media (max-width: 850px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .page {
+        padding: 1.5rem;
+      }
+      .header h1 {
+        font-size: 1.8rem;
+      }
+      .header-brand {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div class="header-brand">
+        <!-- Только логотип, без текста компании -->
+        <img class="header-logo" src="https://static.tildacdn.com/tild6235-6631-4530-a164-313366636138/Logo_CDC_new.png" alt="CDC">
+        <h1>Email Signature Generator</h1>
+      </div>
+      <p class="header-sub">Build your unified corporate signature in seconds. Choose your division, fill in your details, and copy the ready signature into Gmail or Apple Mail on iPhone.</p>
+    </header>
+
+    <section class="grid">
+      <form id="form" class="card" autocomplete="off">
+        <div class="field">
+          <label for="entity">Company</label>
+          <select id="entity" name="entity"></select>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="firstName">First Name *</label>
+            <input id="firstName" name="firstName" value="Artem">
+          </div>
+          <div class="field">
+            <label for="lastName">Last Name *</label>
+            <input id="lastName" name="lastName" value="Petrikin">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="jobTitle">Position *</label>
+            <input id="jobTitle" name="jobTitle" value="IT Specialist">
+          </div>
+          <div class="field">
+            <label for="department">Department <span class="optional">(optional)</span></label>
+            <input id="department" name="department" placeholder="UAE">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="phone">Mobile *</label>
+          <input id="phone" name="phone" value="+7 903 2396260">
+        </div>
+
+        <div class="field">
+          <label for="mobile2">Mobile 2 <span class="optional">(optional)</span></label>
+          <input id="mobile2" name="mobile2" placeholder="">
+        </div>
+
+        <div class="field">
+          <label for="email">Email *</label>
+          <input id="email" name="email" value="asp@cdc.company">
+        </div>
+
+        <div class="field">
+          <label for="email2">Email 2 <span class="optional">(optional)</span></label>
+          <input id="email2" name="email2" placeholder="">
+        </div>
+
+        <div class="field">
+          <label for="address">Address</label>
+          <textarea id="address" name="address"></textarea>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="website1">Website 1</label>
+            <input id="website1" name="website1" value="cdc.company">
+          </div>
+          <div class="field">
+            <label for="website2">Website 2 <span class="optional">(optional)</span></label>
+            <input id="website2" name="website2" value="airbridge.com">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="disclaimerText">Disclaimer</label>
+          <textarea id="disclaimerText" name="disclaimerText" rows="5"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="reset" class="btn btn-secondary btn-wide">Reset</button>
+        </div>
+
+        <div id="status" class="status"></div>
+      </form>
+
+      <div>
+        <div class="preview-box">
+          <h3>Gmail Preview</h3>
+          <div id="previewGmail" class="preview-content"></div>
+          <div class="preview-actions">
+            <button type="button" id="copyGmail" class="btn btn-primary">📧 Copy Gmail signature</button>
+          </div>
+        </div>
+        <div class="preview-box">
+          <h3>Apple iPhone Preview</h3>
+          <div class="apple-note">
+            <span⚠️</span>
+            <span><strong>Shake your phone and tap «Undo»</strong> after pasting into Mail → Signature. This keeps the original formatting.</span>
+          </div>
+          <div id="previewApple" class="preview-content"></div>
+          <div class="preview-actions">
+            <button type="button" id="copyApple" class="btn btn-primary">🍎 Copy Apple iPhone</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const NEW_LINE = String.fromCharCode(10);
+
+    const COMPANY_PROFILES = {
+      cdcHolding: {
+        label: 'CDC New',
+        logoAlt: 'CDC HOLDING',
+        logoUrl: 'https://static.tildacdn.com/tild6235-6631-4530-a164-313366636138/Logo_CDC_new.png',
+        logoWidth: 210,
+        address: '',
+        websites: 'cdc.company|airbridge.com',
+        legalName: 'CDC Cableway Development Company',
+        disclaimerText: `This email and any files transmitted with it may contain information that is proprietary and confidential to CDC Cableway Development Company and its affiliates and is intended solely for the use of the individual or entity to whom it is addressed. If you have received this email in error, please return it to the sender by replying to it, then permanently delete it from your system. Any disclosure, use, copying, or distribution of the information contained in this email by anyone other than the named addressee is strictly prohibited. Any views or opinions expressed in this email are solely those of the author and do not necessarily represent those of CDC Cableway Development Company and its affiliates. No employee, contractor, or agent is authorized to conclude any binding agreement on behalf of CDC Cableway Development Company and its affiliates by email.`
+      },
+      cdcHoldingClassic: {
+        label: 'CDC_Holding',
+        logoAlt: 'CDC_Holding',
+        logoUrl: 'https://static.tildacdn.com/tild6433-6237-4233-b665-636139353139/CDC_Holding.png',
+        logoWidth: 140,
+        address: '',
+        websites: 'cdc.company|airbridge.com',
+        legalName: 'CDC HOLDING LTD',
+        disclaimerText: `This email and any files transmitted with it may contain information that is proprietary and confidential to CDC HOLDING LTD and its affiliates and is intended solely for the use of the individual or entity to whom it is addressed. If you have received this email in error, please return it to the sender by replying to it, then permanently delete it from your system. Any disclosure, use, copying, or distribution of the information contained in this email by anyone other than the named addressee is strictly prohibited. Any views or opinions expressed in this email are solely those of the author and do not necessarily represent those of CDC HOLDING LTD and its affiliates. No employee, contractor, or agent is authorized to conclude any binding agreement on behalf of CDC HOLDING LTD and its affiliates by email.`
+      },
+      cdcSrl: {
+        label: 'CDC_innovative_ropew',
+        logoAlt: 'CDC_innovative_ropew',
+        logoUrl: 'https://static.tildacdn.com/tild6464-3030-4365-a337-346231326430/CDC_innovative_ropew.png',
+        logoWidth: 160,
+        address: 'Handwerkerzone 8\n39040 Aldein (Bozen), Italian Republic',
+        websites: 'cdc.company|cable-crane.com',
+        legalName: 'C.D.C. Chain drive Crane SRL',
+        disclaimerText: `This email and any files transmitted with it may contain information that is proprietary and confidential to C.D.C. Chain drive Crane SRL and its affiliates and is intended solely for the use of the individual or entity to whom it is addressed. If you have received this email in error, please return it to the sender by replying to it, then permanently delete it from your system. Any disclosure, use, copying, or distribution of the information contained in this email by anyone other than the named addressee is strictly prohibited. Any views or opinions expressed in this email are solely those of the author and do not necessarily represent those of C.D.C. Chain drive Crane SRL and its affiliates. No employee, contractor, or agent is authorized to conclude any binding agreement on behalf of C.D.C. Chain drive Crane SRL and its affiliates by email.`
+      },
+      airbridgeUae: {
+        label: 'AirBridge_UAE',
+        logoAlt: 'AirBridge_UAE',
+        logoUrl: 'https://static.tildacdn.com/tild6562-6534-4635-b533-356334393435/AirBridge_UAE.png',
+        logoWidth: 170,
+        address: 'AirBridge FZ-LLC\nT112-5-2, RAKEZ Amenity Center\nAl Hamra Industrial Zone-FZ, RAK, UAE',
+        websites: 'cdc.company|airbridge.com',
+        legalName: 'AirBridge FZ-LLC',
+        disclaimerText: `This email and any files transmitted with it may contain information that is proprietary and confidential to AirBridge FZ-LLC and its affiliates and is intended solely for the use of the individual or entity to whom it is addressed. If you have received this email in error, please return it to the sender by replying to it, then permanently delete it from your system. Any disclosure, use, copying, or distribution of the information contained in this email by anyone other than the named addressee is strictly prohibited. Any views or opinions expressed in this email are solely those of the author and do not necessarily represent those of AirBridge FZ-LLC and its affiliates. No employee, contractor, or agent is authorized to conclude any binding agreement on behalf of AirBridge FZ-LLC and its affiliates by email.`
+      },
+      airbridgeKsa: {
+        label: 'AirBridge_KSA',
+        logoAlt: 'AirBridge_KSA',
+        logoUrl: 'https://static.tildacdn.com/tild3633-6636-4339-a563-303237633430/AirBridge_KSA.png',
+        logoWidth: 170,
+        address: 'AirBridge KSA',
+        websites: 'cdc.company|airbridge.com',
+        legalName: 'AirBridge KSA',
+        disclaimerText: `This email and any files transmitted with it may contain information that is proprietary and confidential to AirBridge KSA and its affiliates and is intended solely for the use of the individual or entity to whom it is addressed. If you have received this email in error, please return it to the sender by replying to it, then permanently delete it from your system. Any disclosure, use, copying, or distribution of the information contained in this email by anyone other than the named addressee is strictly prohibited. Any views or opinions expressed in this email are solely those of the author and do not necessarily represent those of AirBridge KSA and its affiliates. No employee, contractor, or agent is authorized to conclude any binding agreement on behalf of AirBridge KSA and its affiliates by email.`
+      }
+    };
+
+    const form = document.getElementById('form');
+    const entity = document.getElementById('entity');
+    const previewGmail = document.getElementById('previewGmail');
+    const previewApple = document.getElementById('previewApple');
+    const status = document.getElementById('status');
+
+    function getVal(id) { return document.getElementById(id)?.value.trim() || ''; }
+    function esc(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+    function currentProfile() { return COMPANY_PROFILES[entity.value] || COMPANY_PROFILES.cdcHolding; }
+    function withHttps(v) { const t = String(v||'').trim(); if(!t) return ''; return t.toLowerCase().startsWith('http') ? t : 'https://'+t; }
+    function tel(v) { return String(v||'').replace(/[^+\d]/g,''); }
+    function getWebsitesString() { const w1 = getVal('website1'), w2 = getVal('website2'); return (w1&&w2) ? w1+'|'+w2 : w1||w2||''; }
+    function webLinks(str) { return String(str||'').split('|').map(s=>s.trim()).filter(Boolean).map((s,i)=>(i?'<span style="margin:0 6px;color:#999999;">|</span>':'')+`<a href="${esc(withHttps(s))}" style="color:#0b61ff!important;text-decoration:none;">${esc(s)}</a>`).join(''); }
+
+    function logoHtml(profile) {
+      if(!profile.logoUrl) return `<div style="font-size:14px;font-weight:bold;color:#111111;">${esc(profile.logoAlt)}</div>`;
+      return `<a href="${esc(withHttps(profile.websites.split('|')[0]))}" target="_blank" style="text-decoration:none;"><img src="${esc(profile.logoUrl)}" alt="${esc(profile.logoAlt)}" width="${profile.logoWidth}" style="width:${profile.logoWidth}px;height:auto;display:block;border:0;"></a>`;
+    }
+
+    function buildGmailSignature() {
+      const profile = currentProfile();
+      const firstName = getVal('firstName') || 'Artem';
+      const lastName = getVal('lastName') || 'Petrikin';
+      const position = getVal('jobTitle') || 'IT Specialist';
+      const department = getVal('department');
+      const fullTitle = department ? `${position}, ${department}` : position;
+      const phone = getVal('phone');
+      const mobile2 = getVal('mobile2');
+      const email = getVal('email');
+      const email2 = getVal('email2');
+      const websites = getWebsitesString();
+      const disc = getVal('disclaimerText') || profile.disclaimerText || '';
+      const addr = getVal('address');
+      const addrLines = addr ? addr.split(NEW_LINE).map(l=>l.trim()).filter(Boolean) : [];
+
+      let rows = '';
+      if(addrLines.length) rows += `<tr><td style="padding:6px 8px 0 0;width:70px;vertical-align:top;"><b>Address:</b></td><td style="padding:6px 0 0;vertical-align:top;">${addrLines.map(esc).join('<br>')}</td></tr>`;
+      if(phone) rows += `<tr><td style="padding:2px 8px 0 0;width:70px;"><b>Mobile:</b></td><td style="padding:2px 0 0;"><a href="tel:${esc(tel(phone))}" style="color:#0b61ff;text-decoration:none;">${esc(phone)}</a></td></tr>`;
+      if(mobile2) rows += `<tr><td style="padding:2px 8px 0 0;width:70px;"><b>Mobile:</b></td><td style="padding:2px 0 0;"><a href="tel:${esc(tel(mobile2))}" style="color:#0b61ff;text-decoration:none;">${esc(mobile2)}</a></td></tr>`;
+      if(email) rows += `<tr><td style="padding:2px 8px 0 0;width:70px;"><b>Email:</b></td><td style="padding:2px 0 0;"><a href="mailto:${esc(email)}" style="color:#0b61ff;text-decoration:none;">${esc(email)}</a></td></tr>`;
+      if(email2) rows += `<tr><td style="padding:2px 8px 0 0;width:70px;"><b>Email:</b></td><td style="padding:2px 0 0;"><a href="mailto:${esc(email2)}" style="color:#0b61ff;text-decoration:none;">${esc(email2)}</a></td></tr>`;
+      if(websites) rows += `<tr><td style="padding:2px 8px 0 0;width:70px;"><b>Web:</b></td><td style="padding:2px 0 0;">${webLinks(websites)}</td></tr>`;
+
+      return `<table cellpadding="0" cellspacing="0" width="520" style="width:520px;border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;line-height:1.35;color:#111111;">
+        <tbody>
+          <tr><td style="padding:0 0 3px;font-size:14px;font-weight:bold;">${esc(firstName)} ${esc(lastName)}</td></tr>
+          <tr><td style="padding:0 0 3px;font-size:13px;font-weight:600;">${esc(fullTitle)}</td></tr>
+          <tr><td style="padding:0 0 3px;">${logoHtml(profile)}</td></tr>
+          <tr><td><table cellpadding="0" cellspacing="0" width="520" style="width:520px;border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;line-height:1.35;color:#111111;"><tbody>${rows}</tbody></table></td></tr>
+          ${disc ? `<tr><td style="padding:10px 0 0;color:#666666;font-size:11px;line-height:1.35;">${esc(disc)}</td></tr>` : ''}
+        </tbody>
+      </table>`;
+    }
+
+    function appleLogoHtml(profile) {
+      if(!profile.logoUrl) return `<div style="font-size:14px;font-weight:bold;color:#000000!important;">${esc(profile.logoAlt)}</div>`;
+      const w = Math.min(Number(profile.logoWidth||160), 170);
+      return `<a href="${esc(withHttps(profile.websites.split('|')[0]))}" target="_blank" style="text-decoration:none;"><img src="${esc(profile.logoUrl)}" alt="${esc(profile.logoAlt)}" width="${w}" style="width:${w}px;height:auto;display:block;border:0;"></a>`;
+    }
+
+    function buildAppleSignature() {
+      const profile = currentProfile();
+      const firstName = getVal('firstName') || 'Artem';
+      const lastName = getVal('lastName') || 'Petrikin';
+      const position = getVal('jobTitle') || 'IT Specialist';
+      const department = getVal('department');
+      const fullTitle = department ? `${position}, ${department}` : position;
+      const phone = getVal('phone');
+      const mobile2 = getVal('mobile2');
+      const email = getVal('email');
+      const email2 = getVal('email2');
+      const websites = getWebsitesString();
+      const disc = getVal('disclaimerText') || profile.disclaimerText || '';
+      const addr = getVal('address');
+      const addrLines = addr ? addr.split(NEW_LINE).map(l=>l.trim()).filter(Boolean) : [];
+
+      let rows = '';
+      if(addrLines.length) rows += `<tr><td style="padding:2px 8px 0 0;vertical-align:top;font-size:13px;color:#000000!important;white-space:nowrap;"><b>Address:</b></td><td style="padding:2px 0 0;font-size:13px;color:#000000!important;"><font color="#000000">${addrLines.map(esc).join('<br>')}</font></td></tr>`;
+      if(phone) rows += `<tr><td style="padding:2px 8px 0 0;font-size:13px;color:#000000!important;white-space:nowrap;"><b>Mobile:</b></td><td style="padding:2px 0 0;font-size:13px;color:#000000!important;"><font color="#000000"><a href="tel:${esc(tel(phone))}" style="color:#0b61ff!important;text-decoration:none;">${esc(phone)}</a></font></td></tr>`;
+      if(mobile2) rows += `<tr><td style="padding:2px 8px 0 0;font-size:13px;color:#000000!important;white-space:nowrap;"><b>Mobile:</b></td><td style="padding:2px 0 0;font-size:13px;color:#000000!important;"><font color="#000000"><a href="tel:${esc(tel(mobile2))}" style="color:#0b61ff!important;text-decoration:none;">${esc(mobile2)}</a></font></td></tr>`;
+      if(email) rows += `<tr><td style="padding:2px 8px 0 0;font-size:13px;color:#000000!important;white-space:nowrap;"><b>Email:</b></td><td style="padding:2px 0 0;font-size:13px;color:#000000!important;"><font color="#000000"><a href="mailto:${esc(email)}" style="color:#0b61ff!important;text-decoration:none;">${esc(email)}</a></font></td></tr>`;
+      if(email2) rows += `<tr><td style="padding:2px 8px 0 0;font-size:13px;color:#000000!important;white-space:nowrap;"><b>Email:</b></td><td style="padding:2px 0 0;font-size:13px;color:#000000!important;"><font color="#000000"><a href="mailto:${esc(email2)}" style="color:#0b61ff!important;text-decoration:none;">${esc(email2)}</a></font></td></tr>`;
+      if(websites) rows += `<tr><td style="padding:2px 8px 0 0;font-size:13px;color:#000000!important;white-space:nowrap;"><b>Web:</b></td><td style="padding:2px 0 0;font-size:13px;color:#000000!important;"><font color="#000000">${webLinks(websites)}</font></td></tr>`;
+
+      return `<table border="0" cellpadding="0" cellspacing="0" bgcolor="#fffffe" style="background-color:#fffffe!important;border-collapse:collapse;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;font-size:13px;line-height:1.32;color:#000000!important;max-width:340px;">
+        <tr><td bgcolor="#fffffe" style="background-color:#fffffe!important;padding:8px;">
+        <font color="#000000"><div style="font-size:14px;font-weight:700;margin:0 0 3px;color:#000000!important;">${esc(firstName)} ${esc(lastName)}</div>
+        <div style="font-size:13px;font-weight:600;margin:0 0 3px;color:#000000!important;">${esc(fullTitle)}</div>
+        <div style="margin:0 0 3px;">${appleLogoHtml(profile)}</div>
+        <table border="0" cellpadding="0" cellspacing="0" bgcolor="#fffffe" style="background-color:#fffffe!important;border-collapse:collapse;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;font-size:13px;color:#000000;">${rows}</table>
+        ${disc ? `<div style="margin-top:8px;color:#000000!important;font-size:10px;line-height:1.28;">${esc(disc)}</div>` : ''}
+        </font></td></tr></table>`;
+    }
+
+    function render() {
+      previewGmail.innerHTML = buildGmailSignature();
+      previewApple.innerHTML = buildAppleSignature();
+    }
+
+    function applyProfile() {
+      const p = currentProfile();
+      document.getElementById('address').value = p.address;
+      const [w1,w2] = (p.websites||'').split('|');
+      document.getElementById('website1').value = (w1||'').trim();
+      document.getElementById('website2').value = (w2||'').trim();
+      document.getElementById('disclaimerText').value = p.disclaimerText||'';
+      render();
+    }
+
+    async function copyGmail() {
+      render();
+      const html = buildGmailSignature();
+      try {
+        if(navigator.clipboard && window.ClipboardItem) {
+          await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([previewGmail.innerText],{type:'text/plain'})})]);
+        } else {
+          const r=document.createRange(); r.selectNode(previewGmail); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); s.removeAllRanges();
+        }
+        status.textContent='Gmail signature copied.';
+      } catch(e) { status.textContent='Copy failed. Try again.'; }
+    }
+
+    async function copyApple() {
+      render();
+      const html = buildAppleSignature();
+      try {
+        if(navigator.clipboard && window.ClipboardItem) {
+          await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([previewApple.innerText],{type:'text/plain'})})]);
+        } else {
+          const r=document.createRange(); r.selectNode(previewApple); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); s.removeAllRanges();
+        }
+        status.textContent='Apple iPhone signature copied. Now paste and shake to undo!';
+      } catch(e) { status.textContent='Copy failed. Try again.'; }
+    }
+
+    function resetForm() { applyProfile(); status.textContent=''; }
+
+    function init() {
+      Object.keys(COMPANY_PROFILES).forEach(k => { const o=document.createElement('option'); o.value=k; o.textContent=COMPANY_PROFILES[k].label; entity.append(o); });
+      entity.value='cdcHolding';
+      applyProfile();
+      form.addEventListener('input', render);
+      entity.addEventListener('change', applyProfile);
+      document.getElementById('copyGmail').addEventListener('click', copyGmail);
+      document.getElementById('copyApple').addEventListener('click', copyApple);
+      document.getElementById('reset').addEventListener('click', resetForm);
+    }
+    init();
+  </script>
+</body>
+</html>
