@@ -45,7 +45,7 @@
       margin-bottom: 1rem;
     }
     .header-logo {
-      height: 48px; /* немного крупнее для лучшего баланса */
+      height: 48px;
       width: auto;
     }
     .header h1 {
@@ -167,45 +167,67 @@
       font-weight: 500;
     }
 
+    /* Переключатель превью */
+    .preview-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1rem;
+      background: #f1f1f5;
+      border-radius: 2rem;
+      padding: 3px;
+      width: fit-content;
+    }
+    .preview-tab {
+      padding: 0.5rem 1.2rem;
+      border-radius: 2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .preview-tab.active {
+      background: #fff;
+      color: #1d1d1f;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
     .preview-box {
       background: #fff;
       border: 1px solid #e5e5ea;
       border-radius: var(--radius-md);
       padding: 1.2rem;
       box-shadow: var(--shadow-sm);
-      margin-bottom: 1.5rem;
-    }
-    .preview-box h3 {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-bottom: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
     }
     .preview-content {
       font-family: Arial, Helvetica, sans-serif;
       margin-bottom: 1rem;
     }
-    .preview-actions {
-      display: flex;
-      justify-content: flex-start;
-    }
 
-    .apple-note {
+    .apple-instructions {
+      display: none;
       background: #fff9e6;
       border: 1px solid #ffc107;
       border-radius: var(--radius-sm);
-      padding: 0.6rem 1rem;
+      padding: 0.8rem 1rem;
       font-size: 0.8rem;
       color: #333;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5rem;
+      margin-top: 1rem;
+      line-height: 1.5;
     }
-    .apple-note strong {
+    .apple-instructions.visible {
+      display: block;
+    }
+    .apple-instructions strong {
       color: #b45309;
+    }
+
+    .preview-actions {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 1rem;
     }
 
     .form-actions {
@@ -234,11 +256,10 @@
   <main class="page">
     <header class="header">
       <div class="header-brand">
-        <!-- Только логотип, без текста компании -->
         <img class="header-logo" src="https://static.tildacdn.com/tild6235-6631-4530-a164-313366636138/Logo_CDC_new.png" alt="CDC">
         <h1>Email Signature Generator</h1>
       </div>
-      <p class="header-sub">Build your unified corporate signature in seconds. Choose your division, fill in your details, and copy the ready signature into Gmail or Apple Mail on iPhone.</p>
+      <p class="header-sub">Build your unified corporate signature in seconds. Choose your division, fill in your details, and copy the ready signature.</p>
     </header>
 
     <section class="grid">
@@ -319,22 +340,20 @@
       </form>
 
       <div>
-        <div class="preview-box">
-          <h3>Gmail Preview</h3>
-          <div id="previewGmail" class="preview-content"></div>
-          <div class="preview-actions">
-            <button type="button" id="copyGmail" class="btn btn-primary">📧 Copy Gmail signature</button>
-          </div>
+        <div class="preview-tabs" id="previewTabs">
+          <button class="preview-tab active" data-platform="gmail">Gmail</button>
+          <button class="preview-tab" data-platform="apple">Apple Mail</button>
         </div>
         <div class="preview-box">
-          <h3>Apple iPhone Preview</h3>
-          <div class="apple-note">
-            <span⚠️</span>
-            <span><strong>Shake your phone and tap «Undo»</strong> after pasting into Mail → Signature. This keeps the original formatting.</span>
+          <div id="previewContent" class="preview-content"></div>
+          <div class="apple-instructions" id="appleInstructions">
+            <strong>How to add on iPhone / iPad</strong><br>
+            1. Tap <strong>Copy for iPhone</strong> below, then paste into Mail → Settings → Signature.<br>
+            2. If the signature looks wrong, <strong>shake your phone</strong> and tap <strong>Undo</strong>.<br>
+            3. Tap the back arrow to save. Send a test email to confirm.
           </div>
-          <div id="previewApple" class="preview-content"></div>
           <div class="preview-actions">
-            <button type="button" id="copyApple" class="btn btn-primary">🍎 Copy Apple iPhone</button>
+            <button type="button" id="copyBtn" class="btn btn-primary">📧 Copy Gmail signature</button>
           </div>
         </div>
       </div>
@@ -399,9 +418,11 @@
 
     const form = document.getElementById('form');
     const entity = document.getElementById('entity');
-    const previewGmail = document.getElementById('previewGmail');
-    const previewApple = document.getElementById('previewApple');
+    const previewContent = document.getElementById('previewContent');
     const status = document.getElementById('status');
+    const copyBtn = document.getElementById('copyBtn');
+    const appleInstructions = document.getElementById('appleInstructions');
+    let currentPlatform = 'gmail'; // по умолчанию Gmail
 
     function getVal(id) { return document.getElementById(id)?.value.trim() || ''; }
     function esc(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
@@ -491,10 +512,32 @@
         </font></td></tr></table>`;
     }
 
-    function render() {
-      previewGmail.innerHTML = buildGmailSignature();
-      previewApple.innerHTML = buildAppleSignature();
+    function updatePreview() {
+      if (currentPlatform === 'gmail') {
+        previewContent.innerHTML = buildGmailSignature();
+        copyBtn.innerHTML = '📧 Copy Gmail signature';
+      } else {
+        previewContent.innerHTML = buildAppleSignature();
+        copyBtn.innerHTML = '🍎 Copy for iPhone';
+      }
     }
+
+    function switchPlatform(platform) {
+      currentPlatform = platform;
+      document.querySelectorAll('.preview-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelector(`.preview-tab[data-platform="${platform}"]`).classList.add('active');
+      if (platform === 'apple') {
+        appleInstructions.classList.add('visible');
+      } else {
+        appleInstructions.classList.remove('visible');
+      }
+      updatePreview();
+    }
+
+    // Переключатель вкладок
+    document.querySelectorAll('.preview-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchPlatform(tab.dataset.platform));
+    });
 
     function applyProfile() {
       const p = currentProfile();
@@ -503,32 +546,18 @@
       document.getElementById('website1').value = (w1||'').trim();
       document.getElementById('website2').value = (w2||'').trim();
       document.getElementById('disclaimerText').value = p.disclaimerText||'';
-      render();
+      updatePreview();
     }
 
-    async function copyGmail() {
-      render();
-      const html = buildGmailSignature();
+    async function copySignature() {
+      const html = currentPlatform === 'gmail' ? buildGmailSignature() : buildAppleSignature();
       try {
         if(navigator.clipboard && window.ClipboardItem) {
-          await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([previewGmail.innerText],{type:'text/plain'})})]);
+          await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([previewContent.innerText],{type:'text/plain'})})]);
         } else {
-          const r=document.createRange(); r.selectNode(previewGmail); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); s.removeAllRanges();
+          const r=document.createRange(); r.selectNode(previewContent); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); s.removeAllRanges();
         }
-        status.textContent='Gmail signature copied.';
-      } catch(e) { status.textContent='Copy failed. Try again.'; }
-    }
-
-    async function copyApple() {
-      render();
-      const html = buildAppleSignature();
-      try {
-        if(navigator.clipboard && window.ClipboardItem) {
-          await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([previewApple.innerText],{type:'text/plain'})})]);
-        } else {
-          const r=document.createRange(); r.selectNode(previewApple); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); s.removeAllRanges();
-        }
-        status.textContent='Apple iPhone signature copied. Now paste and shake to undo!';
+        status.textContent = currentPlatform === 'gmail' ? 'Gmail signature copied.' : 'Apple iPhone signature copied. Paste and shake to undo!';
       } catch(e) { status.textContent='Copy failed. Try again.'; }
     }
 
@@ -538,10 +567,9 @@
       Object.keys(COMPANY_PROFILES).forEach(k => { const o=document.createElement('option'); o.value=k; o.textContent=COMPANY_PROFILES[k].label; entity.append(o); });
       entity.value='cdcHolding';
       applyProfile();
-      form.addEventListener('input', render);
+      form.addEventListener('input', updatePreview);
       entity.addEventListener('change', applyProfile);
-      document.getElementById('copyGmail').addEventListener('click', copyGmail);
-      document.getElementById('copyApple').addEventListener('click', copyApple);
+      copyBtn.addEventListener('click', copySignature);
       document.getElementById('reset').addEventListener('click', resetForm);
     }
     init();
